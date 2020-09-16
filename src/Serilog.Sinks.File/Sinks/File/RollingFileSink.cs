@@ -158,16 +158,11 @@ namespace Serilog.Sinks.File
 
                     _currentFileSequence = sequence;
                 }
-                catch (IOException ex)
+                catch (IOException ex) when (IOErrors.IsLockedFile(ex))
                 {
-                    if (IOErrors.IsLockedFile(ex))
-                    {
-                        SelfLog.WriteLine("File target {0} was locked, attempting to open next in sequence (attempt {1})", path, attempt + 1);
-                        sequence = (sequence ?? 0) + 1;
-                        continue;
-                    }
-
-                    throw;
+                    SelfLog.WriteLine("File target {0} was locked, attempting to open next in sequence (attempt {1})", path, attempt + 1);
+                    sequence = (sequence ?? 0) + 1;
+                    continue;
                 }
 
                 ApplyRetentionPolicy(path, now);
